@@ -2,21 +2,24 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <iostream>
-
+#include <cstdlib>
+#include <ctime>
+#include <string>
 using namespace sf;
 
 class Ball {
 
     public:
 
-		Ball(const RenderWindow& W, int rad, int x, int y, int r, int g, int b);
+		Ball(const RenderWindow& W, int rad, int x, int y, int r, int g, int b, int indent, std::string s);
 		void move(float x, float y);
 		void update();
 		Sprite sprite; //must be public so we can draw it	
 	
 	private:
 		RenderWindow* W;
-		Vector2f pos;		   
+		Vector2f pos;	
+        int i;	   
 		float rad;
 		float winwidth; //assigned in ctor method below
 		float winheight ;
@@ -32,10 +35,13 @@ class Ball {
 int main()
 {
     //Ball ball(50, 100, 30, 250, 0, 0);
-
+    srand(time(0));
+    int xmet = (rand()%20)-10;
+    int ymet = (rand()%20)-10;
 	Event event;
     RenderWindow window(VideoMode(800,600), "SFML Test");
-    Ball ball(window, 50, 100, 30, 250, 0, 0);
+    Ball ufo(window, 50, 100, 30, 250, 0, 0, 1,"ufo.png");
+    Ball ball(window, 50, 100, 30, 250, 0, 0, 0,"meteor3.png");
     while(window.isOpen())
     {
         while(window.pollEvent(event))
@@ -52,10 +58,14 @@ int main()
 
         }
 
+        ufo.update();
         ball.update();
+        ball.sprite.move(xmet, ymet);
+        ball.sprite.rotate(4);
 		window.setFramerateLimit(60);
         window.clear(Color::White);
         window.draw(ball.sprite);
+        window.draw(ufo.sprite);
         window.display();
     }
     return 0;
@@ -63,17 +73,19 @@ int main()
 }
 
 
-Ball::Ball(const RenderWindow& W, int rad, int x, int y, int r, int g, int b)
+Ball::Ball(const RenderWindow& W, int rad, int x, int y, int r, int g, int b, int indent, std::string pic)
 {
 	//W.setTitle("aoiresntoiaen"); //fails cause W is passed as const ref
 	//W.setSize(Vector2u(500.,500.));
+    i = indent;
 	winheight= W.getSize().y;
 	winwidth= W.getSize().x;
     //texture.loadFromFile("meteor-small.png");
-    texture.loadFromFile("meteor3.png");
+    texture.loadFromFile(pic);
     Vector2u v= texture.getSize();
     float xs= 100./v.x; //make sprite 100 pixels wide and high
     float ys= 100./v.y;
+    i = indent;
     std::cout<<xs<<std::endl;
     sprite.setTexture(texture);
     sprite.setOrigin(v.x/2,v.y/2); 
@@ -91,8 +103,9 @@ void Ball::move(float x, float y)
 	sprite.move(x,y);
 }
 
+
 void Ball::update(){
-	
+	if (i==1){
 	if(Keyboard::isKeyPressed(Keyboard::Left))
 	{
 		sprite.move(-10,0.);
@@ -109,10 +122,9 @@ void Ball::update(){
 	{
 		sprite.move(0,-10);
 	}
-	
+}
 	pos = sprite.getPosition();
 	float rad = 50.;
-		
 	if ( pos.x - rad > winwidth) //beyond right side
     {   
         pos.x = 0;
@@ -129,7 +141,6 @@ void Ball::update(){
     if( pos.y + rad < 0) //beyond top
     {   
         pos.y = winheight;
-    }   
+    }
 	sprite.setPosition(pos.x, pos.y);
-	sprite.rotate(4);
 }
